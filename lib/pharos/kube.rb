@@ -4,8 +4,6 @@ require 'pharos-kube-client'
 
 module Pharos
   module Kube
-    autoload :CertManager, 'pharos/kube/cert_manager'
-
     RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
 
     class Stack
