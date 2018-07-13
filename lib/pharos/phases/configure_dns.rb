@@ -43,18 +43,24 @@ module Pharos
         end
       end
 
+      # @return [Pharos::Kube::Client]
+      def kube_client
+        @kube_client ||= Pharos::Kube.client(@master.api_address)
+      end
+
+      # @return [Pharos::Kube::Resource]
+      def kube_resource_client
+        kube_client.api('extensions/v1beta1').resource('deployments', namespace: 'kube-system')
+      end
+
       # @param replicas [Integer]
       # @param nodes [Integer]
       def patch_kubedns(replicas:, max_surge:, max_unavailable:)
         logger.info { "Patching kube-dns addon with #{replicas} replicas (max-surge #{max_surge}, max-unavailable #{max_unavailable})..." }
 
-        resource = Pharos::Kube.session(@master.api_address).resource(
-          apiVersion: 'extensions/v1beta1',
-          kind: 'Deployment',
-          metadata: {
-            namespace: 'kube-system',
-            name: 'kube-dns'
-          },
+
+        resource = kube_resource_client.get('kube-dns')
+        resource = resource.merge(
           spec: {
             replicas: replicas,
             strategy: {
@@ -90,7 +96,7 @@ module Pharos
             }
           }
         )
-        resource.update
+        kube_resource_client.update_resource(resource)
       end
     end
   end

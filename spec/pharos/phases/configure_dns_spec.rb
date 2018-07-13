@@ -121,12 +121,31 @@ describe Pharos::Phases::ConfigureDNS do
   end
 
   describe '#patch_kubedns' do
-    let(:session) { double }
-    let(:resource) { double }
+    let(:kube_client) { instance_double(Pharos::Kube::Client) }
+    let(:kube_api_client) { instance_double(Pharos::Kube::APIClient) }
+    let(:kube_resource_client) { instance_double(Pharos::Kube::ResourceClient) }
+
+    let(:resource) { Pharos::Kube::Resource.new(
+      apiVersion: 'extensions/v1beta1',
+      kind: 'Deployment',
+      metadata: {
+        name: 'kube-dns',
+        namespace: 'kube-system',
+      },
+      spec: {
+        replicas: 1,
+      }
+    ) }
+
+    before do
+      allow(subject).to receive(:kube_client).and_return(kube_client)
+      allow(kube_client).to receive(:api).with('extensions/v1beta1').and_return(kube_api_client)
+      allow(kube_api_client).to receive(:resource).with('deployments', namespace: 'kube-system').and_return(kube_resource_client)
+    end
+
     it "updates the resource" do
-      expect(Pharos::Kube).to receive(:session).with(master.api_address).and_return(session)
-      expect(session).to receive(:resource) do |hash|
-        res = Kubeclient::Resource.new(hash)
+      expect(kube_resource_client).to receive(:get).with('kube-dns').and_return(resource)
+      expect(kube_resource_client).to receive(:update_resource) do |res|
         expect(res.apiVersion).to eq 'extensions/v1beta1'
         expect(res.kind).to eq 'Deployment'
         expect(res.metadata.name).to eq 'kube-dns'
@@ -135,8 +154,7 @@ describe Pharos::Phases::ConfigureDNS do
         expect(res.spec.strategy.rollingUpdate.maxSurge).to eq 0
         expect(res.spec.strategy.rollingUpdate.maxUnavailable).to eq 1
         expect(res.spec.template.spec.affinity.podAntiAffinity.requiredDuringSchedulingIgnoredDuringExecution).to be_an Array
-      end.and_return(resource)
-      expect(resource).to receive(:update)
+      end
 
       subject.call
     end

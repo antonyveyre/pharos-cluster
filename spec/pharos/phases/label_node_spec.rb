@@ -5,10 +5,14 @@ describe Pharos::Phases::LabelNode do
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.2', labels: { foo: 'bar' } ) }
   let(:subject) { described_class.new(host, master: master) }
 
-  let(:kube) { double(:kube) }
+  let(:kube_client) { instance_double(Pharos::Kube::Client) }
+  let(:kube_api_v1) { instance_double(Pharos::Kube::APIClient) }
+  let(:kube_nodes) { instance_double(Pharos::Kube::ResourceClient) }
 
   before(:each) do
-    allow(subject).to receive(:kube).and_return(kube)
+    allow(subject).to receive(:kube_client).and_return(kube_client)
+    allow(kube_client).to receive(:api).with('v1').and_return(kube_api_v1)
+    allow(kube_api_v1).to receive(:resource).with('nodes').and_return(kube_nodes)
   end
 
   describe '#find_node' do
@@ -18,8 +22,8 @@ describe Pharos::Phases::LabelNode do
 
     it 'finds node via hostname' do
       host.hostname = 'host-01'
-      allow(kube).to receive(:get_nodes).and_return([
-        Kubeclient::Resource.new({
+      allow(kube_nodes).to receive(:get).with('host-01').and_return([
+        Pharos::Kube::Resource.new({
           metadata: {
             name: host.hostname
           }
@@ -30,13 +34,7 @@ describe Pharos::Phases::LabelNode do
 
     it 'returns nil if node not found' do
       host.hostname = 'host-01'
-      allow(kube).to receive(:get_nodes).and_return([
-        Kubeclient::Resource.new({
-          metadata: {
-            name: 'host-09'
-          }
-        })
-      ])
+      allow(kube_nodes).to receive(:get).with('host-01').and_raise(Pharos::Kube::Error::NotFound.new(404, Pharos::Kube::API::MetaV1::Status.new(metadata: {})))
       expect(subject.find_node).to be_nil
     end
   end
@@ -75,14 +73,16 @@ describe Pharos::Phases::LabelNode do
       ) }
 
       it 'patches node' do
-        expect(kube).to receive(:patch_node).with('test',
+        expect(node).to receive(:merge).with(
           metadata: {
             labels: { :foo => 'bar' },
           },
           spec: {
             taints: [ ],
           }
-        )
+        ).and_return(node)
+
+        expect(kube_nodes).to receive(:update_resource).with(node)
 
         subject.call
       end
@@ -97,14 +97,16 @@ describe Pharos::Phases::LabelNode do
       ) }
 
       it 'patches node' do
-        expect(kube).to receive(:patch_node).with('test',
+        expect(node).to receive(:merge).with(
           metadata: {
             labels: { },
           },
           spec: {
             taints: [ { key: 'node-role.kubernetes.io/master', effect: 'NoSchedule' } ],
           }
-        )
+        ).and_return(node)
+
+        expect(kube_nodes).to receive(:update_resource).with(node)
 
         subject.call
       end

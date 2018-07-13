@@ -27,35 +27,39 @@ module Pharos
 
       # @param node [Kubeclient::Resource]
       def patch_node(node)
-        kube.patch_node(
-          node.metadata.name,
+        kube_nodes.update_resource(node.merge(
           metadata: {
             labels: @host.labels || {}
           },
           spec: {
             taints: taints
           }
-        )
+        ))
       end
 
       def find_node
         node = nil
         retries = 0
         while node.nil? && retries < 10
-          node = kube.get_nodes.find { |n|
-            n.metadata.name == @host.hostname
-          }
-          unless node
+          begin
+            node = kube_nodes.get(@host.hostname)
+          rescue Pharos::Kube::Error::NotFound
             retries += 1
             sleep 2
+          else
+            break
           end
         end
 
         node
       end
 
-      def kube
-        @kube ||= Pharos::Kube.client(@master.api_address)
+      def kube_client
+        @kube_client ||= Pharos::Kube.client(@master.api_address)
+      end
+
+      def kube_nodes
+        kube_client.api('v1').resource('nodes')
       end
     end
   end

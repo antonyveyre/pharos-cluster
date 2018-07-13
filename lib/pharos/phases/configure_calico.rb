@@ -17,16 +17,16 @@ module Pharos
         enabled: proc { |c| c.network&.provider == 'calico' }
       )
 
-      def kube_session
-        Pharos::Kube.session(@master.api_address)
+      # @return [Pharos::Kube::Client]
+      def kube_client
+        @kube_client ||= Pharos::Kube.client(@master.api_address)
       end
 
       # @param name [String]
-      # @return [Kubeclient::Resource, nil]
+      # @return [Pharos::Kube::Resource, nil]
       def get_ippool(name)
-        client = kube_session.resource_client('crd.projectcalico.org/v1')
-        client.get_entity('ippools', name)
-      rescue Kubeclient::ResourceNotFoundError
+        kube_client.api('crd.projectcalico.org/v1').resource('ippools').get(name)
+      rescue Pharos::Kube::Error::NotFound
         nil
       end
 
