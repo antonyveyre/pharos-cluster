@@ -198,12 +198,12 @@ module Pharos
     end
 
     # @param vars [Hash]
-    # @return [Array<Kubeclient::Resource>]
+    # @return [Array<Pharos::Kube::Resource>]
     def apply_resources(vars = {})
       kube_stack(vars).apply(kube_client)
     end
 
-    # @return [Array<Kubeclient::Resource>]
+    # @return [Array<Pharos::Kube::Resource>]
     def delete_resources
       kube_stack.delete(kube_client)
     end

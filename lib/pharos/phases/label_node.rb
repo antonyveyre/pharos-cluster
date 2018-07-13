@@ -25,7 +25,7 @@ module Pharos
         @host.taints.map(&:to_h)
       end
 
-      # @param node [Kubeclient::Resource]
+      # @param node [Pharos::Kube::Resource]
       def patch_node(node)
         kube_nodes.update_resource(node.merge(
           metadata: {

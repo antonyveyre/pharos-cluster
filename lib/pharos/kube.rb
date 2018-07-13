@@ -26,7 +26,7 @@ module Pharos
     end
 
     # @param host [String]
-    # @return [Kubeclient::Config]
+    # @return [Pharos::Kube::Config]
     def self.host_config(host)
       Pharos::Kube::Config.load_file(host_config_path(host))
     end
