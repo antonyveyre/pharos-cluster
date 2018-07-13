@@ -6,6 +6,13 @@ module Pharos
   module Kube
     RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
 
+    def self.init_logging!
+      if ENV['DEBUG']
+        Pharos::Kube::Logging.debug!
+        Pharos::Kube::Transport.verbose!
+      end
+    end
+
     class Stack
       def self.load(path, name: , **vars)
         path = Pathname.new(path).freeze
