@@ -7,14 +7,19 @@ module Pharos
 
       def call
         logger.info { "Storing cluster configuration to configmap ..." }
-        resource.apply
+        kube_client.update_resource(resource)
       end
 
       private
 
+      # @return [Pharos::Kube::Client]
+      def kube_client
+        @kube_client ||= Pharos::Kube.client(@master.api_address)
+      end
+
       def resource
         data = JSON.parse(@config.data.to_json) # hack to get rid of symbols
-        Pharos::Kube.session(@master).resource(
+        Pharos::Kube::Resource.new(
           apiVersion: 'v1',
           kind: 'ConfigMap',
           metadata: {
