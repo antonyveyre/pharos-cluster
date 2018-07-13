@@ -19,21 +19,21 @@ module Pharos
 
       def ensure_passwd
         kube_client = Pharos::Kube.client(@master.api_address)
-        begin
-          kube_client.get_secret('weave-passwd', 'kube-system')
-        rescue Kubeclient::ResourceNotFoundError
-          logger.info { "Configuring overlay network shared secret ..." }
-          weave_passwd = Kubeclient::Resource.new(
-            metadata: {
-              name: 'weave-passwd',
-              namespace: 'kube-system'
-            },
-            data: {
-              'weave-passwd': Base64.strict_encode64(generate_password)
-            }
-          )
-          kube_client.create_secret(weave_passwd)
-        end
+        kube_secrets = kube_client.api('v1').resource('secrets', namespace: 'kube-system')
+
+        kube_secrets.get('weave-passwd')
+      rescue Pharos::Kube::Error::NotFound
+        logger.info { "Configuring overlay network shared secret ..." }
+        weave_passwd = Pharos::Kube::Resource.new(
+          metadata: {
+            name: 'weave-passwd',
+            namespace: 'kube-system'
+          },
+          data: {
+            'weave-passwd': Base64.strict_encode64(generate_password)
+          }
+        )
+        kube_secrets.create_resource(weave_passwd)
       end
 
       def ensure_resources
