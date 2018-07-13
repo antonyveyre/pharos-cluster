@@ -1,46 +1,36 @@
 # frozen_string_literal: true
 
-require 'kubeclient'
+require 'pharos-kube-client'
 
 module Pharos
   module Kube
     autoload :CertManager, 'pharos/kube/cert_manager'
-    autoload :Client, 'pharos/kube/client'
-    autoload :Resource, 'pharos/kube/resource'
-    autoload :Stack, 'pharos/kube/stack'
-    autoload :Session, 'pharos/kube/session'
 
     RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
 
-    # @param host [String]
-    # @return [Kubeclient::Client]
-    def self.client(host, version = 'v1')
-      @kube_client ||= {}
-      unless @kube_client[version]
-        config = host_config(host)
-        path_prefix = version == 'v1' ? 'api' : 'apis'
-        api_version, api_group = version.split('/').reverse
-        @kube_client[version] = Pharos::Kube::Client.new(
-          (config.context.api_endpoint + "/#{path_prefix}/#{api_group}"),
-          api_version,
-          ssl_options: config.context.ssl_options,
-          auth_options: config.context.auth_options
-        )
+    class Stack
+      def self.load(path, name: , **vars)
+        path = Pathname.new(path).freeze
+        files = Pathname.glob(path.join('*.{yml,yml.erb}')).sort_by(&:to_s)
+        resources = files.map do |file|
+          Pharos::Kube::Resource.new(Pharos::YamlFile.new(file).load(name: name, **vars))
+        end
+
+        new(name, resources)
       end
-      @kube_client[version]
     end
 
     # @param host [String]
-    # @return [Pharos::Kube::Session]
-    def self.session(host)
-      @sessions ||= {}
-      @sessions[host] ||= Session.new(host)
+    # @return [Pharos::Kube::Client]
+    def self.client(host)
+      @kube_client ||= {}
+      @kube_client[host] ||= Pharos::Kube::Client.config(host_config(host))
     end
 
     # @param host [String]
     # @return [Kubeclient::Config]
     def self.host_config(host)
-      Kubeclient::Config.read(host_config_path(host))
+      Pharos::Kube::Config.load_file(host_config_path(host))
     end
 
     # @param host [String]
@@ -60,14 +50,16 @@ module Pharos
     # @param host [String]
     # @param name [String]
     # @param vars [Hash]
-    def self.apply_stack(host, name, vars = {})
-      session(host).stack(name, File.join(RESOURCE_PATH, name), vars).apply
+    def self.apply_stack(host, name, **vars)
+      stack = Pharos::Kube::Stack.load(File.join(RESOURCE_PATH, name), name: name, **vars)
+      stack.apply(client(host))
     end
 
     # @param host [String]
     # @param name [String]
     def self.remove_stack(host, name)
-      session(host).stack(name, File.join(RESOURCE_PATH, name)).prune('-')
+      stack = Pharos::Kube::Stack.load(File.join(RESOURCE_PATH, name), name: name)
+      stack.delete
     end
   end
 end
