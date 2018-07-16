@@ -39,7 +39,7 @@ describe Pharos::Phases::ConfigureCalico do
     end
 
     it 'returns nil on 404' do
-      expect(kube_resource_client).to receive(:get).with('default-ipv4-ippool').and_raise(Pharos::Kube::Error::NotFound.new(404, Pharos::Kube::API::MetaV1::Status.new(metadata: {})))
+      expect(kube_resource_client).to receive(:get).with('default-ipv4-ippool').and_raise(Pharos::Kube::Error::NotFound.new('GET', '/asdf', 404, "Not Found", Pharos::Kube::API::MetaV1::Status.new(metadata: {})))
 
       expect(subject.get_ippool('default-ipv4-ippool')).to be nil
     end

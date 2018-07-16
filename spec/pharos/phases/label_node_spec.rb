@@ -34,7 +34,7 @@ describe Pharos::Phases::LabelNode do
 
     it 'returns nil if node not found' do
       host.hostname = 'host-01'
-      allow(kube_nodes).to receive(:get).with('host-01').and_raise(Pharos::Kube::Error::NotFound.new(404, Pharos::Kube::API::MetaV1::Status.new(metadata: {})))
+      allow(kube_nodes).to receive(:get).with('host-01').and_raise(Pharos::Kube::Error::NotFound.new('GET', '/asdf', 404, "Not Found", Pharos::Kube::API::MetaV1::Status.new(metadata: {})))
       expect(subject.find_node).to be_nil
     end
   end
