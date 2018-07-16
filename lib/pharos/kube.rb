@@ -64,7 +64,7 @@ module Pharos
     # @param name [String]
     def self.remove_stack(host, name)
       stack = Pharos::Kube::Stack.load(File.join(RESOURCE_PATH, name), name: name)
-      stack.delete
+      stack.delete(client(host))
     end
   end
 end
