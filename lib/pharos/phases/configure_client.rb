@@ -9,6 +9,7 @@ module Pharos
 
       def call
         save_config_locally
+        client_prefetch
         config_map = previous_config_map
         return unless config_map
 
@@ -36,6 +37,12 @@ module Pharos
 
       def config_dir
         File.join(Dir.home, '.pharos')
+      end
+
+      # prefetch client resources to warm up caches
+      def client_prefetch
+        kube_client = Pharos::Kube.client(@host.api_address)
+        kube_client.apis(prefetch_resources: true)
       end
 
       # @param configmap [Pharos::Kube::Resource]
