@@ -27,14 +27,16 @@ module Pharos
 
       # @param node [Pharos::Kube::Resource]
       def patch_node(node)
-        kube_nodes.update_resource(node.merge(
-          metadata: {
-            labels: @host.labels || {}
-          },
-          spec: {
-            taints: taints
-          }
-        ))
+        kube_nodes.update_resource(
+          node.merge(
+            metadata: {
+              labels: @host.labels || {}
+            },
+            spec: {
+              taints: taints
+            }
+          )
+        )
       end
 
       def find_node

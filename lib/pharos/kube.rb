@@ -7,14 +7,16 @@ module Pharos
     RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
 
     def self.init_logging!
+      # rubocop:disable Style/GuardClause
       if ENV['DEBUG']
         Pharos::Kube::Logging.debug!
         Pharos::Kube::Transport.verbose!
       end
+      # rubocop:enable Style/GuardClause
     end
 
     class Stack
-      def self.load(path, name: , **vars)
+      def self.load(path, name:, **vars)
         path = Pathname.new(path).freeze
         files = Pathname.glob(path.join('*.{yml,yml.erb}')).sort_by(&:to_s)
         resources = files.map do |file|
