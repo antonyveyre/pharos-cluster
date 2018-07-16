@@ -7,7 +7,7 @@ module Pharos
 
       def call
         logger.info { "Storing cluster configuration to configmap ..." }
-        kube_client.update_resource(resource)
+        ensure_resource(resource)
       end
 
       private
@@ -33,6 +33,12 @@ module Pharos
             'pharos-addons.yml' => addons.to_yaml
           }
         )
+      end
+
+      def ensure_resource(resource)
+        kube_client.update_resource(resource)
+      rescue Pharos::Kube::Error::NotFound
+        kube_client.create_resource(resource)
       end
 
       def components
