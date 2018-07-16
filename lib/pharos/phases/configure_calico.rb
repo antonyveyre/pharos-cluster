@@ -27,6 +27,7 @@ module Pharos
       def get_ippool(name)
         kube_client.api('crd.projectcalico.org/v1').resource('ippools').get(name)
       rescue Pharos::Kube::Error::NotFound
+        # handles both CRD not found, or ippool not found 
         nil
       end
 
