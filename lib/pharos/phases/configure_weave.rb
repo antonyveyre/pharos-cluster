@@ -38,7 +38,8 @@ module Pharos
       def ensure_resources
         trusted_subnets = @config.network.weave&.trusted_subnets || []
         logger.info { "Configuring overlay network ..." }
-        apply_stack('weave',
+        apply_stack(
+          'weave',
           image_repository: @config.image_repository,
           trusted_subnets: trusted_subnets,
           ipalloc_range: @config.network.pod_network_cidr,

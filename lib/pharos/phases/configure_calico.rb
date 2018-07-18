@@ -45,7 +45,8 @@ module Pharos
         validate
 
         logger.info { "Configuring network ..." }
-        apply_stack('calico',
+        apply_stack(
+          'calico',
           image_repository: @config.image_repository,
           ipv4_pool_cidr: @config.network.pod_network_cidr,
           ipip_mode: @config.network.calico&.ipip_mode || 'Always',
