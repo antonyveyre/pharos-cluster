@@ -56,10 +56,6 @@ module Pharos
         node
       end
 
-      def kube_client
-        @kube_client ||= Pharos::Kube.client(@master.api_address)
-      end
-
       def kube_nodes
         kube_client.api('v1').resource('nodes')
       end

@@ -4,6 +4,8 @@ require 'logger'
 
 module Pharos
   class Phase
+    RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
+
     # @return [String]
     def self.title(title = nil)
       @title = title if title
@@ -72,6 +74,33 @@ module Pharos
     # @return [Pharos::Host::Configurer]
     def host_configurer
       @host.configurer(@ssh)
+    end
+
+    # @return [K8s::Client]
+    def kube_client
+      fail "Phase #{self.class.name} does not have kube @master" unless @master
+
+      @kube_client ||= Pharos::Kube.client(@master.api_address)
+    end
+
+    # @param host [String]
+    # @param name [String]
+    # @param vars [Hash]
+    def kube_stack(name, **vars)
+      Pharos::Kube.stack(File.join(RESOURCE_PATH, name), name: name, **vars)
+    end
+
+    # @param host [String]
+    # @param name [String]
+    # @param vars [Hash]
+    def apply_stack(name, **vars)
+      kube_stack(name, **vars).apply(kube_client)
+    end
+
+    # @param host [String]
+    # @param name [String]
+    def remove_stack(host, name)
+      kube_stack(name).delete(kube_client) # XXX: will fail to load resources without vars?
     end
   end
 end

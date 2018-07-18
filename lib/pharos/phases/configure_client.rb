@@ -41,7 +41,6 @@ module Pharos
 
       # prefetch client resources to warm up caches
       def client_prefetch
-        kube_client = Pharos::Kube.client(@host.api_address)
         kube_client.apis(prefetch_resources: true)
       end
 
@@ -56,7 +55,6 @@ module Pharos
 
       # @return [K8s::Resource, nil]
       def previous_config_map
-        kube_client = Pharos::Kube.client(@host.api_address)
         kube_client.api('v1').resource('configmaps', namespace: 'kube-system').get('pharos-config')
       rescue K8s::Error::NotFound
         nil

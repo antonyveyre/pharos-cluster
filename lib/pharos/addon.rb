@@ -188,7 +188,7 @@ module Pharos
     # @param vars [Hash]
     # @return [Pharos::Kube::Stack]
     def kube_stack(vars = {})
-      Pharos::Kube::Stack.load(
+      Pharos::Kube.stack(
         File.join(self.class.addon_location, 'resources'),
         name: name,
         version: self.class.version,

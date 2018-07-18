@@ -4,8 +4,6 @@ require 'k8s-client'
 
 module Pharos
   module Kube
-    RESOURCE_PATH = Pathname.new(File.expand_path(File.join(__dir__, 'resources'))).freeze
-
     def self.init_logging!
       # rubocop:disable Style/GuardClause
       if ENV['DEBUG']
@@ -16,9 +14,15 @@ module Pharos
     end
 
     class Stack < K8s::Stack
+      # custom labels
       LABEL = 'pharos.kontena.io/stack'
       CHECKSUM_ANNOTATION = 'pharos.kontena.io/stack-checksum'
 
+      # Load stack with resources from path containing erb-templated YAML files
+      #
+      # @param path [String]
+      # @param name [String]
+      # @param vars [Hash]
       def self.load(path, name:, **vars)
         path = Pathname.new(path).freeze
         files = Pathname.glob(path.join('*.{yml,yml.erb}')).sort_by(&:to_s)
@@ -37,6 +41,13 @@ module Pharos
       @kube_client[host] ||= K8s::Client.config(host_config(host))
     end
 
+    # @param path [String]
+    # @param name [String]
+    # @param vars [Hash]
+    def self.stack(path, name:, **vars)
+      Pharos::Kube::Stack.load(path, name: name, **vars)
+    end
+
     # @param host [String]
     # @return [K8s::Config]
     def self.host_config(host)
@@ -53,23 +64,6 @@ module Pharos
     # @return [Boolean]
     def self.config_exists?(host)
       File.exist?(host_config_path(host))
-    end
-
-    # Shortcuts / compatibility:
-
-    # @param host [String]
-    # @param name [String]
-    # @param vars [Hash]
-    def self.apply_stack(host, name, **vars)
-      stack = Pharos::Kube::Stack.load(File.join(RESOURCE_PATH, name), name: name, **vars)
-      stack.apply(client(host))
-    end
-
-    # @param host [String]
-    # @param name [String]
-    def self.remove_stack(host, name)
-      stack = Pharos::Kube::Stack.load(File.join(RESOURCE_PATH, name), name: name)
-      stack.delete(client(host))
     end
   end
 end

@@ -12,11 +12,6 @@ module Pharos
 
       private
 
-      # @return [K8s::Client]
-      def kube_client
-        @kube_client ||= Pharos::Kube.client(@master.api_address)
-      end
-
       def resource
         data = JSON.parse(@config.data.to_json) # hack to get rid of symbols
         K8s::Resource.new(

@@ -17,11 +17,6 @@ module Pharos
         enabled: proc { |c| c.network&.provider == 'calico' }
       )
 
-      # @return [K8s::Client]
-      def kube_client
-        @kube_client ||= Pharos::Kube.client(@master.api_address)
-      end
-
       # @param name [String]
       # @return [K8s::Resource, nil]
       def get_ippool(name)
@@ -50,8 +45,7 @@ module Pharos
         validate
 
         logger.info { "Configuring network ..." }
-        Pharos::Kube.apply_stack(
-          @master.api_address, 'calico',
+        apply_stack('calico',
           image_repository: @config.image_repository,
           ipv4_pool_cidr: @config.network.pod_network_cidr,
           ipip_mode: @config.network.calico&.ipip_mode || 'Always',
