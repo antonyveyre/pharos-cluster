@@ -96,11 +96,5 @@ module Pharos
     def apply_stack(name, **vars)
       kube_stack(name, **vars).apply(kube_client)
     end
-
-    # @param host [String]
-    # @param name [String]
-    def remove_stack(host, name)
-      kube_stack(name).delete(kube_client) # XXX: will fail to load resources without vars?
-    end
   end
 end
