@@ -22,9 +22,9 @@ module Pharos
         kube_secrets = kube_client.api('v1').resource('secrets', namespace: 'kube-system')
 
         kube_secrets.get('weave-passwd')
-      rescue Pharos::Kube::Error::NotFound
+      rescue K8s::Error::NotFound
         logger.info { "Configuring overlay network shared secret ..." }
-        weave_passwd = Pharos::Kube::Resource.new(
+        weave_passwd = K8s::Resource.new(
           metadata: {
             name: 'weave-passwd',
             namespace: 'kube-system'

@@ -43,12 +43,12 @@ module Pharos
         end
       end
 
-      # @return [Pharos::Kube::Client]
+      # @return [K8s::Client]
       def kube_client
         @kube_client ||= Pharos::Kube.client(@master.api_address)
       end
 
-      # @return [Pharos::Kube::Resource]
+      # @return [K8s::Resource]
       def kube_resource_client
         kube_client.api('extensions/v1beta1').resource('deployments', namespace: 'kube-system')
       end

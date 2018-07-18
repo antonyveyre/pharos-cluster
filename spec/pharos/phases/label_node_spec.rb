@@ -5,9 +5,9 @@ describe Pharos::Phases::LabelNode do
   let(:host) { Pharos::Configuration::Host.new(address: '192.0.2.2', labels: { foo: 'bar' } ) }
   let(:subject) { described_class.new(host, master: master) }
 
-  let(:kube_client) { instance_double(Pharos::Kube::Client) }
-  let(:kube_api_v1) { instance_double(Pharos::Kube::APIClient) }
-  let(:kube_nodes) { instance_double(Pharos::Kube::ResourceClient) }
+  let(:kube_client) { instance_double(K8s::Client) }
+  let(:kube_api_v1) { instance_double(K8s::APIClient) }
+  let(:kube_nodes) { instance_double(K8s::ResourceClient) }
 
   before(:each) do
     allow(subject).to receive(:kube_client).and_return(kube_client)
@@ -23,7 +23,7 @@ describe Pharos::Phases::LabelNode do
     it 'finds node via hostname' do
       host.hostname = 'host-01'
       allow(kube_nodes).to receive(:get).with('host-01').and_return([
-        Pharos::Kube::Resource.new({
+        K8s::Resource.new({
           metadata: {
             name: host.hostname
           }
@@ -34,7 +34,7 @@ describe Pharos::Phases::LabelNode do
 
     it 'returns nil if node not found' do
       host.hostname = 'host-01'
-      allow(kube_nodes).to receive(:get).with('host-01').and_raise(Pharos::Kube::Error::NotFound.new('GET', '/asdf', 404, "Not Found", Pharos::Kube::API::MetaV1::Status.new(metadata: {})))
+      allow(kube_nodes).to receive(:get).with('host-01').and_raise(K8s::Error::NotFound.new('GET', '/asdf', 404, "Not Found", K8s::API::MetaV1::Status.new(metadata: {})))
       expect(subject.find_node).to be_nil
     end
   end

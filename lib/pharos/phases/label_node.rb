@@ -25,7 +25,7 @@ module Pharos
         @host.taints.map(&:to_h)
       end
 
-      # @param node [Pharos::Kube::Resource]
+      # @param node [K8s::Resource]
       def patch_node(node)
         kube_nodes.update_resource(
           node.merge(
@@ -45,7 +45,7 @@ module Pharos
         while node.nil? && retries < 10
           begin
             node = kube_nodes.get(@host.hostname)
-          rescue Pharos::Kube::Error::NotFound
+          rescue K8s::Error::NotFound
             retries += 1
             sleep 2
           else

@@ -14,11 +14,11 @@ describe Pharos::Phases::ConfigureCalico do
   subject { described_class.new(host, config: config, master: host) }
 
   describe '#get_ippool' do
-    let(:kube_client) { instance_double(Pharos::Kube::Client) }
-    let(:kube_api_client) { instance_double(Pharos::Kube::APIClient) }
-    let(:kube_resource_client) { instance_double(Pharos::Kube::ResourceClient) }
+    let(:kube_client) { instance_double(K8s::Client) }
+    let(:kube_api_client) { instance_double(K8s::APIClient) }
+    let(:kube_resource_client) { instance_double(K8s::ResourceClient) }
 
-    let(:resource) { Pharos::Kube::Resource.new(
+    let(:resource) { K8s::Resource.new(
       apiVersion: 'crd.projectcalico.org/v1',
       kind: 'IPPool',
       metadata: {
@@ -39,7 +39,7 @@ describe Pharos::Phases::ConfigureCalico do
     end
 
     it 'returns nil on 404' do
-      expect(kube_resource_client).to receive(:get).with('default-ipv4-ippool').and_raise(Pharos::Kube::Error::NotFound.new('GET', '/asdf', 404, "Not Found", Pharos::Kube::API::MetaV1::Status.new(metadata: {})))
+      expect(kube_resource_client).to receive(:get).with('default-ipv4-ippool').and_raise(K8s::Error::NotFound.new('GET', '/asdf', 404, "Not Found", K8s::API::MetaV1::Status.new(metadata: {})))
 
       expect(subject.get_ippool('default-ipv4-ippool')).to be nil
     end

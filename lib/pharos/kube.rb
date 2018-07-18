@@ -1,6 +1,6 @@
 # frozen_string_literal: true
 
-require 'pharos-kube-client'
+require 'k8s-client'
 
 module Pharos
   module Kube
@@ -9,18 +9,21 @@ module Pharos
     def self.init_logging!
       # rubocop:disable Style/GuardClause
       if ENV['DEBUG']
-        Pharos::Kube::Logging.debug!
-        Pharos::Kube::Transport.verbose!
+        K8s::Logging.debug!
+        K8s::Transport.verbose!
       end
       # rubocop:enable Style/GuardClause
     end
 
-    class Stack
+    class Stack < K8s::Stack
+      LABEL = 'pharos.kontena.io/stack'
+      CHECKSUM_ANNOTATION = 'pharos.kontena.io/stack-checksum'
+
       def self.load(path, name:, **vars)
         path = Pathname.new(path).freeze
         files = Pathname.glob(path.join('*.{yml,yml.erb}')).sort_by(&:to_s)
         resources = files.map do |file|
-          Pharos::Kube::Resource.new(Pharos::YamlFile.new(file).load(name: name, **vars))
+          K8s::Resource.new(Pharos::YamlFile.new(file).load(name: name, **vars))
         end
 
         new(name, resources)
@@ -28,16 +31,16 @@ module Pharos
     end
 
     # @param host [String]
-    # @return [Pharos::Kube::Client]
+    # @return [K8s::Client]
     def self.client(host)
       @kube_client ||= {}
-      @kube_client[host] ||= Pharos::Kube::Client.config(host_config(host))
+      @kube_client[host] ||= K8s::Client.config(host_config(host))
     end
 
     # @param host [String]
-    # @return [Pharos::Kube::Config]
+    # @return [K8s::Config]
     def self.host_config(host)
-      Pharos::Kube::Config.load_file(host_config_path(host))
+      K8s::Config.load_file(host_config_path(host))
     end
 
     # @param host [String]

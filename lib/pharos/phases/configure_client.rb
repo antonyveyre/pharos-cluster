@@ -45,7 +45,7 @@ module Pharos
         kube_client.apis(prefetch_resources: true)
       end
 
-      # @param configmap [Pharos::Kube::Resource]
+      # @param configmap [K8s::Resource]
       # @return [Pharos::Config]
       def build_config(configmap)
         cluster_config = Pharos::YamlFile.new(StringIO.new(configmap.data['cluster.yml']), override_filename: "#{@host}:cluster.yml").load
@@ -54,11 +54,11 @@ module Pharos
         Pharos::Config.new(data)
       end
 
-      # @return [Pharos::Kube::Resource, nil]
+      # @return [K8s::Resource, nil]
       def previous_config_map
         kube_client = Pharos::Kube.client(@host.api_address)
         kube_client.api('v1').resource('configmaps', namespace: 'kube-system').get('pharos-config')
-      rescue Pharos::Kube::Error::NotFound
+      rescue K8s::Error::NotFound
         nil
       end
     end

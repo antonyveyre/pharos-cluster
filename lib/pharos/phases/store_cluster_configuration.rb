@@ -12,14 +12,14 @@ module Pharos
 
       private
 
-      # @return [Pharos::Kube::Client]
+      # @return [K8s::Client]
       def kube_client
         @kube_client ||= Pharos::Kube.client(@master.api_address)
       end
 
       def resource
         data = JSON.parse(@config.data.to_json) # hack to get rid of symbols
-        Pharos::Kube::Resource.new(
+        K8s::Resource.new(
           apiVersion: 'v1',
           kind: 'ConfigMap',
           metadata: {
@@ -37,7 +37,7 @@ module Pharos
 
       def ensure_resource(resource)
         kube_client.update_resource(resource)
-      rescue Pharos::Kube::Error::NotFound
+      rescue K8s::Error::NotFound
         kube_client.create_resource(resource)
       end
 

@@ -180,7 +180,7 @@ module Pharos
       end
     end
 
-    # @return [Pharos::Kube::Client]
+    # @return [K8s::Client]
     def kube_client
       Pharos::Kube.client(master.api_address)
     end
@@ -199,12 +199,12 @@ module Pharos
     end
 
     # @param vars [Hash]
-    # @return [Array<Pharos::Kube::Resource>]
+    # @return [Array<K8s::Resource>]
     def apply_resources(vars = {})
       kube_stack(vars).apply(kube_client)
     end
 
-    # @return [Array<Pharos::Kube::Resource>]
+    # @return [Array<K8s::Resource>]
     def delete_resources
       kube_stack.delete(kube_client)
     end

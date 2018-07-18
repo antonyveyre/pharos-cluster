@@ -121,11 +121,11 @@ describe Pharos::Phases::ConfigureDNS do
   end
 
   describe '#patch_kubedns' do
-    let(:kube_client) { instance_double(Pharos::Kube::Client) }
-    let(:kube_api_client) { instance_double(Pharos::Kube::APIClient) }
-    let(:kube_resource_client) { instance_double(Pharos::Kube::ResourceClient) }
+    let(:kube_client) { instance_double(K8s::Client) }
+    let(:kube_api_client) { instance_double(K8s::APIClient) }
+    let(:kube_resource_client) { instance_double(K8s::ResourceClient) }
 
-    let(:resource) { Pharos::Kube::Resource.new(
+    let(:resource) { K8s::Resource.new(
       apiVersion: 'extensions/v1beta1',
       kind: 'Deployment',
       metadata: {
