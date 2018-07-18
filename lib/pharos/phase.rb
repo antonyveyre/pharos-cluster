@@ -87,7 +87,7 @@ module Pharos
     # @param name [String]
     # @param vars [Hash]
     def kube_stack(name, **vars)
-      Pharos::Kube.stack(File.join(RESOURCE_PATH, name), name: name, **vars)
+      Pharos::Kube.stack(name, File.join(RESOURCE_PATH, name), name: name, **vars)
     end
 
     # @param host [String]

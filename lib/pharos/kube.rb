@@ -23,7 +23,7 @@ module Pharos
       # @param path [String]
       # @param name [String]
       # @param vars [Hash]
-      def self.load(path, name:, **vars)
+      def self.load(name, path, **vars)
         path = Pathname.new(path).freeze
         files = Pathname.glob(path.join('*.{yml,yml.erb}')).sort_by(&:to_s)
         resources = files.map do |file|
@@ -41,11 +41,11 @@ module Pharos
       @kube_client[host] ||= K8s::Client.config(host_config(host))
     end
 
-    # @param path [String]
     # @param name [String]
+    # @param path [String]
     # @param vars [Hash]
-    def self.stack(path, name:, **vars)
-      Pharos::Kube::Stack.load(path, name: name, **vars)
+    def self.stack(name, path, **vars)
+      Pharos::Kube::Stack.load(name, path, **vars)
     end
 
     # @param host [String]

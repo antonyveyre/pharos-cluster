@@ -187,8 +187,9 @@ module Pharos
 
     # @param vars [Hash]
     # @return [Pharos::Kube::Stack]
-    def kube_stack(vars = {})
+    def kube_stack(**vars)
       Pharos::Kube.stack(
+        name,
         File.join(self.class.addon_location, 'resources'),
         name: name,
         version: self.class.version,
@@ -200,7 +201,7 @@ module Pharos
 
     # @param vars [Hash]
     # @return [Array<K8s::Resource>]
-    def apply_resources(vars = {})
+    def apply_resources(**vars)
       kube_stack(vars).apply(kube_client)
     end
 
