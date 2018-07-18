@@ -207,7 +207,7 @@ module Pharos
 
     # @return [Array<K8s::Resource>]
     def delete_resources
-      kube_stack.delete(kube_client)
+      Pharos::Kube::Stack.new(name).delete(kube_client)
     end
 
     def validate; end
